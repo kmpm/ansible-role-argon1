@@ -1,0 +1,111 @@
+---
+- name: ensure required packages are installed
+  apt:
+    name: raspi-gpio, python-rpi.gpio, python3-rpi.gpio, python-smbus, python3-smbus, i2c-tools
+    state: present
+
+- name: ensure i2c is enabled in device tree config
+  lineinfile:
+    path: /boot/config.txt
+    regexp: 'dtparam=i2c_arm='
+    line: dtparam=i2c_arm=on
+  notify:
+  - reboot pi
+
+- name: ensure serial is enabled in device tree config
+  ini_file:
+    path: /boot/config.txt
+    section: all
+    option: enable_uart
+    value: "1"
+  notify:
+  - reboot pi
+
+- name: ensure daemon config file is present
+  template:
+    src: daemonname.config.j2
+    dest: "{{ daemonconfigfile }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: ensure shutdown python script is present
+  copy:
+    src: shutdownscript.py
+    dest: "{{ shutdownscript }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: ensure power button python script is present
+  template:
+    src: powerbuttonscript.py.j2
+    dest: "{{ powerbuttonscript }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: ensure uninstall script is present
+  template:
+    src: uninstallscript.sh.j2
+    dest: "{{ uninstallscript }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: ensure config script is present
+  template:
+    src: configscript.sh.j2
+    dest: "{{ configscript }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "ensure daemon fan service is present. {{ daemonfile }}"
+  template:
+    src: daemonname.service.j2
+    dest: "{{ daemonfile }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload systemd
+
+- name: flush handlers
+  meta: flush_handlers
+
+- name: ensure fan service is started and enabled on boot
+  systemd:
+    name: "{{ daemonname }}"
+    state: restarted
+    enabled: yes
+
+
+- name: ensure desktop shortcuts are present if selected
+  block:
+  - name: ensure icon images are present
+    get_url:
+      url: "{{ item.url }}"
+      dest: "{{ item.dest }}"
+      mode: '0440'
+    loop:
+    - { url: 'http://download.argon40.com/ar1config.png',
+        dest: /usr/share/pixmaps/ar1config.png }
+    - { url: 'http://download.argon40.com/ar1uninstall.png',
+        dest: /usr/share/pixmaps/ar1uninstall.png }
+
+  - name: ensure desktop config shortcut is present
+    template:
+      src: argonone-config.desktop.j2
+      dest: "{{ desktop_configfile }}"
+      mode: 0755
+
+  - name: ensure desktop uninstall shortcut is present
+    template:
+      src: argonone-uninstall.desktop.j2
+      dest: "{{ desktop_uninstallfile }}"
+      mode: 0755
+
+  when:
+  - argon1_desktop is defined
+  - argon1_desktop | bool

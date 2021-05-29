@@ -1,0 +1,31 @@
+#!/bin/bash
+echo "-------------------------"
+echo "Argon One Uninstall Tool"
+echo "-------------------------"
+echo -n "Press Y to continue:"
+read -n 1 confirm
+echo
+if [ "$confirm" = "y" ]
+then
+	confirm="Y"
+fi
+
+if [ "$confirm" != "Y" ]
+then
+	echo "Cancelled"
+	exit
+fi
+if [ -d "/home/pi/Desktop" ]; then
+	sudo rm "{{ desktop_configfile }}"
+	sudo rm "{{ desktop_uninstallfile }}"
+fi
+if [ -f '{{ powerbuttonscript }}' ]; then
+	sudo systemctl stop {{ daemonname }}.service
+	sudo systemctl disable {{ daemonname }}.service
+	sudo /usr/bin/python3 {{ shutdownscript }} uninstall
+	sudo rm {{ powerbuttonscript }}
+	sudo rm {{ shutdownscript }}
+	sudo rm {{ uninstallscript }}
+	echo "Removed Argon One Services."
+	echo "Cleanup will complete after restarting the device."
+fi

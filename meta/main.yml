@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Andrew Garner
+  description: Ansible Role for configuring a Raspberry Pi for use in an Argon One case
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+  - name: Debian
+    versions:
+    - Buster
+  galaxy_tags:
+  - raspberry
+  - raspberrypi
+  - argon
+  - "argon-one"
+dependencies: []  

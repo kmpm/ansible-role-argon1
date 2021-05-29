@@ -1,0 +1,10 @@
+---
+daemonname: "{{ argon1_daemonname }}"
+powerbuttonscript: "/usr/bin/{{ daemonname }}.py"
+shutdownscript: "/lib/systemd/system-shutdown/{{ daemonname }}-poweroff.py"
+configscript: "/usr/bin/argonone-config"
+uninstallscript: "/usr/bin/argonone-uninstall"
+daemonfile: "/lib/systemd/system/{{ daemonname }}.service"
+daemonconfigfile: "/etc/{{ daemonname }}.conf"
+desktop_configfile: "/home/pi/Desktop/{{ daemonname }}-config.desktop"
+desktop_uninstallfile: "/home/pi/Desktop/{{ daemonname }}-uninstall.desktop"
